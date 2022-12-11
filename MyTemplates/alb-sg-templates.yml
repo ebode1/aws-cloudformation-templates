@@ -1,7 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: Deploiement de l'ALB et du security group pour PKI
 
-## Declaration des variable utilisé
 Mappings:
   genericinfo:
     config:
@@ -24,10 +23,9 @@ Mappings:
       AlbLogBucket: 'transdev-lb-logs'
       AlbLogPrefix: 'lb'
   
-## Declaration des ressources que l'on veut creer
 Resources:
 ### Security Group FOR ALB=SG ALB  ###
-  securitygroupinfra-alb:
+### securitygroupinfra-alb:
     Type: AWS::EC2::SecurityGroup
     Properties: 
       GroupDescription: Security Group for ALB-SG alb 
@@ -71,7 +69,7 @@ Resources:
             - AppName
 
 ### Security Group FOR PKI TECH Server ###
-  securitygroupinfra-tech:
+### securitygroupinfra-tech:
     Type: AWS::EC2::SecurityGroup
     Properties: 
       GroupDescription: Security Group for pki tech
@@ -133,7 +131,7 @@ Resources:
             - tags
             - AppName
 ### Security Group FOR PKI USERS Server ###
-  securitygroupinfra-users:
+### securitygroupinfra-users:
     Type: AWS::EC2::SecurityGroup
     Properties: 
       GroupDescription: Security Group for pki users
