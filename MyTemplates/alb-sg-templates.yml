@@ -247,7 +247,7 @@ Resources:
           Key: "access_logs.s3.prefix"
           Value: !FindInMap [awsaccounts, !Ref 'AWS::AccountId', AlbLogPrefix]
 
-  alblistener1:
+  alb listener:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       Port: 80
