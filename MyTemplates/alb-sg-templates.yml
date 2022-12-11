@@ -27,7 +27,7 @@ Mappings:
 ## Declaration des ressources que l'on veut creer
 Resources:
 ### Security Group FOR ALB=SG ALB  ###
-  securitygroupinfra-ALB-SG-alb:
+  securitygroupinfra-alb:
     Type: AWS::EC2::SecurityGroup
     Properties: 
       GroupDescription: Security Group for ALB-SG alb 
