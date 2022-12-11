@@ -31,15 +31,15 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties: 
       GroupDescription: Security Group for ALB-SG alb 
-      GroupName: specific-infra-alb
+      GroupName: specific_infra_alb
       Tags: 
         - Key: Name
-          Value: specific-infra-alb
+          Value: 'specific_infra_alb'
       VpcId: !FindInMap
         - awsaccounts
         - !Ref "AWS::AccountId"
         - vpcid
-### INBOUND AND EGRESS:specific-infra-alb ###
+### INBOUND AND EGRESS:specific_infra_alb ###
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -58,7 +58,7 @@ Resources:
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
-          Value: 'specific-infra-alb'
+          Value: 'specific_infra_alb'
         - Key: ITOwner
           Value: !FindInMap
             - awsaccounts
@@ -75,16 +75,16 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties: 
       GroupDescription: Security Group for pki tech
-      GroupName: specific-infra-tech
+      GroupName: specific_infra_tech
       Tags: 
         - Key: Name
-          Value: specific-infra-tech
+          Value: specific_infra_tech
       Tags: 
       VpcId: !FindInMap
         - awsaccounts
         - !Ref "AWS::AccountId"
         - vpcid
-### INBOUND AND EGRESS: specific-infra-tech ###
+### INBOUND AND EGRESS: specific_infra_tech ###
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -121,7 +121,7 @@ Resources:
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
-          Value: 'specific-infra-tech'
+          Value: 'specific_infra_tech'
         - Key: ITOwner
           Value: !FindInMap
             - awsaccounts
@@ -137,16 +137,16 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties: 
       GroupDescription: Security Group for pki users
-      GroupName: specific-infra-users
+      GroupName: specific_infra_users
       Tags: 
         - Key: Name
-          Value: specific-infra-users
+          Value: specific_infra_users
       Tags: 
       VpcId: !FindInMap
         - awsaccounts
         - !Ref "AWS::AccountId"
         - vpcid
-### INBOUND AND EGRESS: specific-infra-users ###
+### INBOUND AND EGRESS: specific_infra_users ###
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -183,7 +183,7 @@ Resources:
           CidrIp: 0.0.0.0/0
       Tags:
         - Key: Name
-          Value: 'specific-infra-users'
+          Value: 'specific_infra_users'
         - Key: ITOwner
           Value: !FindInMap
             - awsaccounts
