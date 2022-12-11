@@ -89,23 +89,23 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          Description: 
+          Description: Connexion venant de tous les utilisateurs
         - IpProtocol: tcp
           FromPort: 3389
           ToPort: 3389
-          Description: 
+          Description: Connexion RDP venant du serveur tdadmin
         - IpProtocol: tcp
           FromPort: 445
           ToPort: 445
-          Description: 
+          Description: Connexion pour le partage de fichiers
         - IpProtocol: tcp
           FromPort: 139
           ToPort: 139
-          Description: 
+          Description: Connexion pour le partage de fichiers
         - IpProtocol: tcp
           FromPort: 135
           ToPort: 135
-          Description: Connexion venant de tous les utilisateurs les utilisateurs internes 10.0.0.0/8 
+          Description: Connexion venant de tous les utilisateurs internes 10.0.0.0/8 
         - IpProtocol: tcp
           FromPort: 1024-5000
           ToPort: 1024-5000
@@ -151,19 +151,19 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          Description: 
+          Description: Connexion venant de tous les utilisateurs
         - IpProtocol: tcp
           FromPort: 3389
           ToPort: 3389
-          Description: 
+          Description: Connexion RDP venant du serveur tdadmin
         - IpProtocol: tcp
           FromPort: 445
           ToPort: 445
-          Description: 
+          Description: Connexion pour le partage de fichiers
         - IpProtocol: tcp
           FromPort: 139
           ToPort: 139
-          Description: 
+          Description: Connexion pour le partage de fichiers
         - IpProtocol: tcp
           FromPort: 135
           ToPort: 135
@@ -171,11 +171,11 @@ Resources:
         - IpProtocol: tcp
           FromPort: 1024-5000
           ToPort: 1024-5000
-          Description: 
+          Description: Connexion venant des clients Windows Server 2003 et XP
         - IpProtocol: tcp
           FromPort: 49153-65535
           ToPort: 49153-65535
-          Description: 
+          Description: Connexion venant des clients Windows 7, Windows 8, WS 2008 et WS 2012
       SecurityGroupEgress:
         - IpProtocol: -1
           FromPort: -1
