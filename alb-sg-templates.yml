@@ -1,0 +1,268 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploiement de l'ALB et du security group pour PKI
+
+## Declaration des variable utilisé
+Mappings:
+  genericinfo:
+    config:
+      AZ: a
+    tags:
+      BusinessOwner: stieve.ebode@gmail.com
+      AppName: ALB-SG
+
+  awsaccounts:
+    '372986516991': # ID du compte AWS de PROD
+      env: prod
+      a: subnet-c86dadaf # subnet private 1a-eu-west
+      b: subnet-5a24eb13
+      c: subnet-8b525dd3
+      apub: subnet-a668a8c1
+      bpub: subnet-8524ebcc
+      cpub: subnet-8e6f60d6
+      vpcid: vpc-775d9d10 # Id du VPC de PROD
+      ITOwner: stieve.ebode@gmail.com
+      AlbLogBucket: 'transdev-lb-logs'
+      AlbLogPrefix: 'lb'
+  
+## Declaration des ressources que l'on veut creer
+Resources:
+### Security Group FOR ALB=SG ALB  ###
+  securitygroupinfra-ALB-SG-alb:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: Security Group for ALB-SG alb 
+      GroupName: specific-infra-alb
+      Tags: 
+        - Key: Name
+          Value: specific-infra-alb
+      VpcId: !FindInMap
+        - awsaccounts
+        - !Ref "AWS::AccountId"
+        - vpcid
+### INBOUND AND EGRESS:specific-infra-alb ###
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 10.0.0.0/8
+          Description: Connexion depuis les utilisateurs internes et externes  vers ALB sur le port 80
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 10.0.0.0/8
+          Description: Connexion depuis les utilisateurs internes et externes vers ALB sur le port 443  
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: 'specific-infra-alb'
+        - Key: ITOwner
+          Value: !FindInMap
+            - awsaccounts
+            - !Ref "AWS::AccountId"
+            - ITOwner
+        - Key: AppName
+          Value : !FindInMap
+            - genericinfo
+            - tags
+            - AppName
+
+### Security Group FOR PKI TECH Server ###
+  securitygroupinfra-tech:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: Security Group for pki tech
+      GroupName: specific-infra-tech
+      Tags: 
+        - Key: Name
+          Value: specific-infra-tech
+      Tags: 
+      VpcId: !FindInMap
+        - awsaccounts
+        - !Ref "AWS::AccountId"
+        - vpcid
+### INBOUND AND EGRESS: specific-infra-tech ###
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          Description: 
+        - IpProtocol: tcp
+          FromPort: 3389
+          ToPort: 3389
+          Description: 
+        - IpProtocol: tcp
+          FromPort: 445
+          ToPort: 445
+          Description: 
+        - IpProtocol: tcp
+          FromPort: 139
+          ToPort: 139
+          Description: 
+        - IpProtocol: tcp
+          FromPort: 135
+          ToPort: 135
+          Description: Connexion venant de tous les utilisateurs les utilisateurs internes 10.0.0.0/8 
+        - IpProtocol: tcp
+          FromPort: 1024-5000
+          ToPort: 1024-5000
+          Description: Connexion venant des clients Windows Server 2003 et XP
+        - IpProtocol: tcp
+          FromPort: 49153-65535
+          ToPort: 49153-65535
+          Description: Connexion venant des clients Windows 7, Windows 8, WS 2008 et WS 2012
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: 'specific-infra-tech'
+        - Key: ITOwner
+          Value: !FindInMap
+            - awsaccounts
+            - !Ref "AWS::AccountId"
+            - ITOwner
+        - Key: AppName
+          Value : !FindInMap
+            - genericinfo
+            - tags
+            - AppName
+### Security Group FOR PKI USERS Server ###
+  securitygroupinfra-users:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: Security Group for pki users
+      GroupName: specific-infra-users
+      Tags: 
+        - Key: Name
+          Value: specific-infra-users
+      Tags: 
+      VpcId: !FindInMap
+        - awsaccounts
+        - !Ref "AWS::AccountId"
+        - vpcid
+### INBOUND AND EGRESS: specific-infra-users ###
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          Description: 
+        - IpProtocol: tcp
+          FromPort: 3389
+          ToPort: 3389
+          Description: 
+        - IpProtocol: tcp
+          FromPort: 445
+          ToPort: 445
+          Description: 
+        - IpProtocol: tcp
+          FromPort: 139
+          ToPort: 139
+          Description: 
+        - IpProtocol: tcp
+          FromPort: 135
+          ToPort: 135
+          Description: Connexion venant de tous les utilisateurs les utilisateurs internes 10.0.0.0/8 
+        - IpProtocol: tcp
+          FromPort: 1024-5000
+          ToPort: 1024-5000
+          Description: 
+        - IpProtocol: tcp
+          FromPort: 49153-65535
+          ToPort: 49153-65535
+          Description: 
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: 'specific-infra-users'
+        - Key: ITOwner
+          Value: !FindInMap
+            - awsaccounts
+            - !Ref "AWS::AccountId"
+            - ITOwner
+        - Key: AppName
+          Value : !FindInMap
+            - genericinfo
+            - tags
+            - AppName
+
+
+  # ALB Internal Facing
+  alb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Name: ALB-TRANSDEV
+      Scheme: internet-facing
+      SecurityGroups:
+          - !Ref sgalb
+      Subnets:
+        - !FindInMap
+            - awsaccounts
+            - !Ref 'AWS::AccountId'
+            - apub
+        - !FindInMap
+            - awsaccounts
+            - !Ref 'AWS::AccountId'
+            - bpub
+        - !FindInMap
+            - awsaccounts
+            - !Ref 'AWS::AccountId'
+            - cpub
+      Tags:
+        -
+          Key: "BusinessOwner"
+          Value: !FindInMap
+            - genericinfo
+            - tags
+            - BusinessOwner
+        -
+          Key: "ITOwner"
+          Value: !FindInMap
+            - awsaccounts
+            - !Ref 'AWS::AccountId'
+            - ITOwner
+        -
+          Key: "AppName"
+          Value: !FindInMap
+            - genericinfo
+            - tags
+            - AppName
+      Type: application
+      LoadBalancerAttributes:
+        -
+          Key: "access_logs.s3.bucket"
+          Value: !FindInMap [awsaccounts, !Ref 'AWS::AccountId', AlbLogBucket]
+        -
+          Key: "access_logs.s3.enabled"
+          Value: "true"
+        -
+          Key: "access_logs.s3.prefix"
+          Value: !FindInMap [awsaccounts, !Ref 'AWS::AccountId', AlbLogPrefix]
+
+  alblistener1:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        -
+          Order: 1
+          Type: redirect
+          RedirectConfig:
+             Protocol: "HTTPS"
+             Port: 443
+             Host: "#{host}"
+             Path: "/#{path}"
+             Query: "#{query}"
+             StatusCode: "HTTP_301"
+      LoadBalancerArn: !Ref alb
