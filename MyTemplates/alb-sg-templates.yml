@@ -195,7 +195,7 @@ Resources:
 
 
   # ALB Internal Facing
-  alb:
+  #alb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       IpAddressType: ipv4
