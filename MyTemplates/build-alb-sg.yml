@@ -1,0 +1,360 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploiement de l'ALB et du security group pour PKI
+
+## Declaration des variable utilisé
+Mappings:
+  genericinfo:
+    config:
+      AZ: a
+    tags:
+      BusinessOwner: philippe.tailleur@transdev.com
+      AppName: PKI
+
+  awsaccounts:
+    '587393783457': # ID du compte AWS de PROD
+      env: pprod
+      a: subnet-7267a715 # subnet private 1a-eu-west
+      b: subnet-a72de2ee
+      c: subnet-dd565985
+      apub: subnet-a668a8c1
+      bpub: subnet-8524ebcc
+      cpub: subnet-8e6f60d6
+      vpcid: vpc-775d9d10 # Id du VPC de PROD
+      ITOwner: arno.tarpin@transdev.com
+      AlbLogBucket: 'transdev-lb-logs'
+      AlbLogPrefix: 'lb'
+  
+## Declaration des ressources que l'on veut creer
+Resources:
+### Security Group FOR PKI ALB  ###
+  SecuritygroupInfraPkiAlb:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: Security Group for pki alb 
+      GroupName: specific-infra-pki-alb
+      Tags: 
+        - Key: Name
+          Value: specific-infra-pki-alb
+      VpcId: !FindInMap
+        - awsaccounts
+        - !Ref "AWS::AccountId"
+        - vpcid
+### INBOUND AND EGRESS:specific-infra-pki-alb ###
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 10.0.0.0/8
+          Description: Allow access all users with port 80
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 10.0.0.0/8
+          Description: Allow access from all users with port 443
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: 'specific-infra-pki-alb'
+        - Key: ITOwner
+          Value: !FindInMap
+            - awsaccounts
+            - !Ref "AWS::AccountId"
+            - ITOwner
+        - Key: AppName
+          Value : !FindInMap
+            - genericinfo
+            - tags
+            - AppName
+
+
+### Security Group FOR PKI TECH Server ###
+  SecuritygroupInfraPkiTech:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: Security Group for pki tech
+      GroupName: specific-infra-pki-ac-tech
+      Tags: 
+        - Key: Name
+          Value: specific-infra-pki-ac-tech
+      Tags: 
+      VpcId: !FindInMap
+        - awsaccounts
+        - !Ref "AWS::AccountId"
+        - vpcid
+### INBOUND AND EGRESS: specific-infra-pki-tech ###
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+#          SourceSecurityGroupName: specific-infra-pki-alb
+          SourceSecurityGroupId: !GetAtt SecuritygroupInfraPkiAlb.GroupId
+          Description: Allow access from ALB
+        # - IpProtocol: tcp
+        #   FromPort: 3389
+        #   ToPort: 3389
+        #   CidrIp: 10.32.27.2
+        #   Description: Allow access from tdadminmetier
+        - IpProtocol: tcp
+          FromPort: 445
+          ToPort: 445
+#          SourceSecurityGroupName: specific-infra-pki-ac-users
+          SourceSecurityGroupId: !GetAtt SecuritygroupInfraPkiUsers.GroupId
+          Description: Allow File sharing with PKI AC Users
+        - IpProtocol: tcp
+          FromPort: 139
+          ToPort: 139
+#          SourceSecurityGroupName: specific-infra-pki-ac-users
+          SourceSecurityGroupId: !GetAtt SecuritygroupInfraPkiUsers.GroupId        
+          Description: Allow File sharing with PKI PKI AC Users
+        # - IpProtocol: tcp
+        #   FromPort: 445
+        #   ToPort: 445
+        #   SourceSecurityGroupName: specific-infra-pki-ac-racine
+        #   Description: Allow File sharing with PKI AC Racine
+        # - IpProtocol: tcp
+        #   FromPort: 139
+        #   ToPort: 139
+        #   SourceSecurityGroupName: specific-infra-pki-ac-racine
+        #   Description: Allow File sharing with PKI AC Racine       
+        - IpProtocol: tcp
+          FromPort: 135
+          ToPort: 135
+          CidrIp: 10.0.0.0/8
+          Description: Allow RPC Call access from all users
+        - IpProtocol: tcp
+          FromPort: 1024
+          ToPort: 5000
+          CidrIp: 10.0.0.0/8
+          Description: Allow DCOM/RPC access from Windows Server 2003 et XP clients
+        - IpProtocol: tcp
+          FromPort: 49153
+          ToPort: 65535
+          CidrIp: 10.0.0.0/8
+          Description: Allow DCOM/RPC access from Windows 7, Windows 8, WS 2008 et WS 2012 clients
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: 'specific-infra-pki-ac-tech'
+        - Key: ITOwner
+          Value: !FindInMap
+            - awsaccounts
+            - !Ref "AWS::AccountId"
+            - ITOwner
+        - Key: AppName
+          Value : !FindInMap
+            - genericinfo
+            - tags
+            - AppName
+### Security Group FOR PKI USERS Server ###
+  SecuritygroupInfraPkiUsers:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: Security Group for pki users
+      GroupName: specific-infra-pki-ac-users
+      Tags: 
+        - Key: Name
+          Value: specific-infra-pki-ac-users
+      Tags: 
+      VpcId: !FindInMap
+        - awsaccounts
+        - !Ref "AWS::AccountId"
+        - vpcid
+### INBOUND AND EGRESS: specific-infra-pki-users ###
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+#          SourceSecurityGroupName: specific-infra-pki-alb
+          SourceSecurityGroupId: !GetAtt SecuritygroupInfraPkiAlb.GroupId
+          Description: Allow access from ALB
+        # - IpProtocol: tcp
+        #   FromPort: 3389
+        #   ToPort: 3389
+        #   CidrIp: 10.32.27.2
+        #   Description: Allow access from tdadminmetier
+#         - IpProtocol: tcp
+#           FromPort: 445
+#           ToPort: 445
+# #          SourceSecurityGroupName: specific-infra-pki-ac-tech
+#           SourceSecurityGroupId: !GetAtt SecuritygroupInfraPkiTech.GroupId
+#           Description: Allow File sharing with PKI AC Tech
+#         - IpProtocol: tcp
+#           FromPort: 139
+#           ToPort: 139
+# #          SourceSecurityGroupName: specific-infra-pki-ac-tech
+#           SourceSecurityGroupId: !GetAtt SecuritygroupInfraPkiTech.GroupId
+#           Description: Allow File sharing with PKI PKI AC Tech
+        # - IpProtocol: tcp
+        #   FromPort: 445
+        #   ToPort: 445
+        #   SourceSecurityGroupName: specific-infra-pki-ac-racine
+        #   Description: Allow File sharing with PKI AC Racine
+        # - IpProtocol: tcp
+        #   FromPort: 139
+        #   ToPort: 139
+        #   SourceSecurityGroupName: specific-infra-pki-ac-racine
+        #   Description: Allow File sharing with PKI AC Racine       
+        - IpProtocol: tcp
+          FromPort: 135
+          ToPort: 135
+          CidrIp: 10.0.0.0/8
+          Description: Allow RPC Call accesss from all users
+        - IpProtocol: tcp
+          FromPort: 1024
+          ToPort: 5000
+          CidrIp: 10.0.0.0/8
+          Description: Allow DCOM/RPC access from Windows Server 2003 et XP clients
+        - IpProtocol: tcp
+          FromPort: 49153
+          ToPort: 65535
+          CidrIp: 10.0.0.0/8
+          Description: Allow DCOM/RPC access from Windows 7, Windows 8, WS 2008 et WS 2012 clients
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          FromPort: -1
+          ToPort: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: 'specific-infra-pki-ac-users'
+        - Key: ITOwner
+          Value: !FindInMap
+            - awsaccounts
+            - !Ref "AWS::AccountId"
+            - ITOwner
+        - Key: AppName
+          Value : !FindInMap
+            - genericinfo
+            - tags
+            - AppName
+
+
+# ### Security Group FOR PKI AC Racine Server ###
+#   SecuritygroupInfraPkiRacine:
+#     Type: AWS::EC2::SecurityGroup
+#     Properties: 
+#       GroupDescription: Security Group for pki racine
+#       GroupName: specific-infra-pki-ac-racine
+#       Tags: 
+#         - Key: Name
+#           Value: specific-infra-pki-ac-racine
+#       Tags: 
+#       VpcId: !FindInMap
+#         - awsaccounts
+#         - !Ref "AWS::AccountId"
+#         - vpcid
+# ### INBOUND AND EGRESS: specific-infra-pki-ac-racine ###
+#       SecurityGroupEgress:
+#         - IpProtocol: tcp
+#           FromPort: 445
+#           ToPort: 445
+#           SourceSecurityGroupName: specific-infra-pki-ac-tech
+#           Description: Allow File sharing with PKI AC Users
+#         - IpProtocol: tcp
+#           FromPort: 139
+#           ToPort: 139
+#           SourceSecurityGroupName: specific-infra-pki-ac-tech
+#           Description: Allow File sharing with PKI PKI AC Users
+#         - IpProtocol: tcp
+#           FromPort: 445
+#           ToPort: 445
+#           SourceSecurityGroupName: specific-infra-pki-ac-users
+#           Description: Allow File sharing with PKI AC Users
+#         - IpProtocol: tcp
+#           FromPort: 139
+#           ToPort: 139
+#           SourceSecurityGroupName: specific-infra-pki-ac-users
+#           Description: Allow File sharing with PKI PKI AC Users
+#       Tags:
+#         - Key: Name
+#           Value: 'specific-infra-pki-ac-racine'
+#         - Key: ITOwner
+#           Value: !FindInMap
+#             - awsaccounts
+#             - !Ref "AWS::AccountId"
+#             - ITOwner
+#         - Key: AppName
+#           Value : !FindInMap
+#             - genericinfo
+#             - tags
+#             - AppName
+
+
+  # ALB Internal Facing
+  alb:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Name: ALB-PKI-TRANSDEV
+      Scheme: internet-facing
+      SecurityGroups:
+          - !Ref SecuritygroupInfraPkiAlb
+      Subnets:
+        - !FindInMap
+            - awsaccounts
+            - !Ref 'AWS::AccountId'
+            - apub
+        - !FindInMap
+            - awsaccounts
+            - !Ref 'AWS::AccountId'
+            - bpub
+        - !FindInMap
+            - awsaccounts
+            - !Ref 'AWS::AccountId'
+            - cpub
+      Tags:
+        -
+          Key: "BusinessOwner"
+          Value: !FindInMap
+            - genericinfo
+            - tags
+            - BusinessOwner
+        -
+          Key: "ITOwner"
+          Value: !FindInMap
+            - awsaccounts
+            - !Ref 'AWS::AccountId'
+            - ITOwner
+        -
+          Key: "AppName"
+          Value: !FindInMap
+            - genericinfo
+            - tags
+            - AppName
+      Type: application
+      LoadBalancerAttributes:
+        -
+          Key: "access_logs.s3.bucket"
+          Value: !FindInMap [awsaccounts, !Ref 'AWS::AccountId', AlbLogBucket]
+        -
+          Key: "access_logs.s3.enabled"
+          Value: "true"
+        -
+          Key: "access_logs.s3.prefix"
+          Value: !FindInMap [awsaccounts, !Ref 'AWS::AccountId', AlbLogPrefix]
+
+  alblistener1:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        -
+          Order: 1
+          Type: redirect
+          RedirectConfig:
+             Protocol: "HTTPS"
+             Port: 443
+             Host: "#{host}"
+             Path: "/#{path}"
+             Query: "#{query}"
+             StatusCode: "HTTP_301"
+      LoadBalancerArn: !Ref alb
